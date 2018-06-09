@@ -62,6 +62,7 @@ whileKey            "while"
 forKey              "for"
 breakKey            "break"
 continueKey         "continue"
+returnKey			"return"
 
 voidKey             "void"
 intKey              "int"
@@ -110,6 +111,7 @@ charKey             "char"
 {forKey}            { HANDLE_TOKEN(FOR); }
 {breakKey}          { HANDLE_TOKEN(BREAK); }
 {continueKey}       { HANDLE_TOKEN(CONTINUE); }
+{returnKey}			{ HANDLE_TOKEN(RETURN); }
 
 {voidKey}           { HANDLE_TOKEN(VOID); }
 {intKey}            { HANDLE_TOKEN(INT); }
