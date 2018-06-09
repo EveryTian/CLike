@@ -10,12 +10,12 @@ void yyerror(const char *);
 
 %}
 
-%token <value> INT_VALUE FLOAT_VALUE IDENT_VALUE
-%token <token> LCB RCB LP RP LB RB SQ DQ
-%token <token> ADD SUB MUL DIV ASSIGN EQ NE GT GE LT LE AND OR NOT
-%token <token> IF ELSE DO WHILE FOR BREAK CONTINUE RETURN
-%token <token> VOID INT FLOAT CHAR
-%token <token> SEMI COMMA
+%token <string> INT_VALUE FLOAT_VALUE IDENT_VALUE
+%token LCB RCB LP RP LB RB SQ DQ
+%token ADD SUB MUL DIV ASSIGN EQ NE GT GE LT LE AND OR NOT
+%token IF ELSE DO WHILE FOR BREAK CONTINUE RETURN
+%token VOID INT FLOAT CHAR
+%token SEMI COMMA
 
 %union {
     Node *node;
@@ -45,6 +45,7 @@ void yyerror(const char *);
     StatementList *stmtls;
     ArgumentList *argls;
     Value *value;
+    std::string *string;
 }
 
 %type <node> program
@@ -105,7 +106,7 @@ global_statement:
 
 variable_declaration_statement:
     variable_type variable ASSIGN expression SEMI {
-        $$ = new VariableDeclarationStatement($1, $2, $3);
+        $$ = new VariableDeclarationStatement($1, $2, $4);
     }
     ;
 
@@ -165,7 +166,7 @@ block:
         $$ = new Block(NULL, $2);
     }
     | LCB variable_declaration_statement_list statement_list RCB {
-        $$ = new Block($1, $2);
+        $$ = new Block($2, $3);
     }
     ;
 
@@ -312,7 +313,7 @@ argument_list:
         $$->push_back($1);
     }
     | argument_list COMMA expression {
-        $1->push_back($2);
+        $1->push_back($3);
     }
     | {
         $$ = NULL;

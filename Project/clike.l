@@ -4,10 +4,12 @@
 
 #include "ast.hpp"
 #include "clike.tab.hh"
+
+#define YYSTYPE union {std::string *string}
 // #include "syntactic.hpp"
 
-#define HANDLE_TOKEN(tokenName) yylval.token = tokenName; return tokenName
-#define HANDLE_TOKEN_WITH_VALUE(tokenName) yylval.token = tokenName; yyval.value = new std::string(yytext, yyleng); return tokenName
+#define HANDLE_TOKEN(tokenName) return tokenName
+#define HANDLE_TOKEN_WITH_VALUE(tokenName) yylval.string = new std::string(yytext, yyleng); return tokenName
 
 %}
 
@@ -94,9 +96,6 @@ charKey             "char"
 {andOp}             { HANDLE_TOKEN(AND); }
 {orOp}              { HANDLE_TOKEN(OR); }
 {notOp}             { HANDLE_TOKEN(NOT); }
-{bitAndOp}          { HANDLE_TOKEN(BAND); }
-{bitOrOp}           { HANDLE_TOKEN(BOR); }
-{bitNotOp}          { HANDLE_TOKEN(BNOT); }
 
 {semicolon}         { HANDLE_TOKEN(SEMI); }
 {comma}             { HANDLE_TOKEN(COMMA); }
@@ -122,3 +121,9 @@ charKey             "char"
 .                   { fprintf(stderr, "Unknown Token at Line %d.\n", yylineno); yyterminate(); }
 
 %%
+
+/*
+{bitAndOp}          { HANDLE_TOKEN(BAND); }
+{bitOrOp}           { HANDLE_TOKEN(BOR); }
+{bitNotOp}          { HANDLE_TOKEN(BNOT); }
+*/
