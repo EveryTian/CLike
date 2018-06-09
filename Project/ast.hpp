@@ -15,7 +15,8 @@ class VariableDeclarationStatement;
 class VariableDeclaration;
 class Variable;
 class Identifier;
-class GlobalFunctionDeclarationStatement;
+// class GlobalFunctionDeclarationStatement;
+class FunctionDeclarationStatement;
 class Parameter;
 class Block;
 class ExpressionStatement;
@@ -44,7 +45,7 @@ class Value;
 class IntValue;
 class FloatValue;
 
-typedef std::vector<GlobalStatement *> GlobalStatementList;
+// typedef std::vector<GlobalStatement *> GlobalStatementList;
 // typedef std::vector<VariableDeclaration *> VariableDeclarationList;
 typedef std::vector<Parameter *> ParameterList;
 typedef std::vector<VariableDeclarationStatement *> VariableDeclarationStatementList;
@@ -52,27 +53,27 @@ typedef std::vector<Statement *> StatementList;
 typedef std::vector<Argument *> ArgumentList;
 
 class Node {
-
-};
-
-class Program : Node {
 public:
-	GlobalStatementList *globalStatementList;
 };
 
-class Statement : Node {
-
+class Program : public Node {
+public:
+	StatementList *globalStatementList;
 };
 
-class Expression : Node {
-
+class Statement : public Node {
+public:
 };
 
-class GlobalStatement : Statement {
-
+class Expression : public Node {
+public:
 };
 
-class VariableType : Node {
+// class GlobalStatement : Statement {
+// public:
+// };
+
+class VariableType : public Node {
 public:
 	enum VariableTypeEnum {
 		INT = 1, FLOAT = 2, CHAR = 3
@@ -90,19 +91,19 @@ public:
 	}
 };
 
-class GlobalVariableDeclarationStatement : GlobalStatement {
-public:
-	VariableType *variableType;
-    Variable *variable;
-    Expression *expression;
-    GlobalVariableDeclarationStatement(VariableType *varType, Variable *var, Expression *expr) {
-        variableType = varType;
-        variable = var;
-        expression = expr;
-    }
-};
+// class GlobalVariableDeclarationStatement : GlobalStatement {
+// public:
+// 	VariableType *variableType;
+//     Variable *variable;
+//     Expression *expression;
+//     GlobalVariableDeclarationStatement(VariableType *varType, Variable *var, Expression *expr) {
+//         variableType = varType;
+//         variable = var;
+//         expression = expr;
+//     }
+// };
 
-class VariableDeclarationStatement : Statement {
+class VariableDeclarationStatement : public Statement {
 public:
 	VariableType *variableType;
     Variable *variable;
@@ -120,7 +121,7 @@ public:
 // 	Expression *expression;
 // };
 
-class Variable : Expression {
+class Variable : public Expression {
 public:
 	Identifier *identifier;
 	Expression *indexExpression;
@@ -130,7 +131,7 @@ public:
     }
 };
 
-class Identifier : Expression {
+class Identifier : public Expression {
 public:
 	std::string *identifier;
     Identifier(std::string *ident) {
@@ -138,13 +139,14 @@ public:
     }
 };
 
-class GlobalFunctionDeclarationStatement : GlobalStatement {
+// class GlobalFunctionDeclarationStatement : GlobalStatement {
+class FunctionDeclarationStatement : public Statement {
 public:
 	VariableType *variableType;
 	Identifier *identifier;
 	ParameterList *parameterList;
 	Block *block;
-    GlobalFunctionDeclarationStatement(VariableType *varType, Identifier *ident, ParameterList *paraList, Block *blk) {
+    FunctionDeclarationStatement(VariableType *varType, Identifier *ident, ParameterList *paraList, Block *blk) {
         variableType = varType;
         identifier = ident;
         parameterList = paraList;
@@ -152,7 +154,7 @@ public:
     }
 };
 
-class Parameter : Node {
+class Parameter : public Node {
 public:
 	VariableType *variableType;
 	Identifier *identifier;
@@ -162,7 +164,7 @@ public:
     }
 };
 
-class Block : Statement {
+class Block : public Statement {
 public:
 	VariableDeclarationStatementList *variableDeclarationstatementList;
 	StatementList *statementList;
@@ -172,7 +174,7 @@ public:
     }
 };
 
-class ExpressionStatement : Statement {
+class ExpressionStatement : public Statement {
 public:
 	Expression *expression;
     ExpressionStatement(Expression *e) {
@@ -180,7 +182,7 @@ public:
     }
 };
 
-class ReturnStatement : Statement {
+class ReturnStatement : public Statement {
 public:
 	Expression *expression;
     ReturnStatement(Expression *e) {
@@ -188,7 +190,7 @@ public:
     }
 };
 
-class WhileStatement : Statement {
+class WhileStatement : public Statement {
 public:
 	Expression *expression;
 	Statement *statement;
@@ -198,7 +200,7 @@ public:
     }
 };
 
-class ForStatement : Statement {
+class ForStatement : public Statement {
 public:
 	Expression *expression1;
 	Expression *expression2;
@@ -212,7 +214,7 @@ public:
     }
 };
 
-class IfStatement : Statement {
+class IfStatement : public Statement {
 public:
 	Expression *expression;
 	Statement *ifStatement;
@@ -224,7 +226,7 @@ public:
     }
 };
 
-class AssignExpression : Expression {
+class AssignExpression : public Expression {
 public:
 	Variable *variable;
 	Expression *expression;
@@ -234,7 +236,7 @@ public:
     }
 };
 
-class AndExpression : Expression {
+class AndExpression : public Expression {
 public:
 	Expression *expression1;
 	Expression *expression2;
@@ -244,7 +246,7 @@ public:
     }
 };
 
-class OrExpression : Expression {
+class OrExpression : public Expression {
 public:
 	Expression *expression1;
 	Expression *expression2;
@@ -254,7 +256,7 @@ public:
     }
 };
 
-class GtExpression : Expression {
+class GtExpression : public Expression {
 public:
 	Expression *expression1;
 	Expression *expression2;
@@ -264,7 +266,7 @@ public:
     }
 };
 
-class LtExpression : Expression {
+class LtExpression : public Expression {
 public:
 	Expression *expression1;
 	Expression *expression2;
@@ -274,7 +276,7 @@ public:
     }
 };
 
-class GeExpression : Expression {
+class GeExpression : public Expression {
 public:
 	Expression * expression1;
 	Expression *expression2;
@@ -284,7 +286,7 @@ public:
     }
 };
 
-class LeExpression : Expression {
+class LeExpression : public Expression {
 public:
 	Expression * expression1;
 	Expression *expression2;
@@ -294,7 +296,7 @@ public:
     }
 };
 
-class EqExpression : Expression {
+class EqExpression : public Expression {
 public:
 	Expression *expression1;
 	Expression *expression2;
@@ -304,7 +306,7 @@ public:
     }
 };
 
-class NeExpression : Expression {
+class NeExpression : public Expression {
 public:
 	Expression *expression1;
 	Expression *expression2;
@@ -314,7 +316,7 @@ public:
     }
 };
 
-class AddExpression : Expression {
+class AddExpression : public Expression {
 public:
 	Expression *expression1;
 	Expression *expression2;
@@ -324,7 +326,7 @@ public:
     }
 };
 
-class SubExpression : Expression {
+class SubExpression : public Expression {
 public:
 	Expression *expression1;
 	Expression *expression2;
@@ -334,7 +336,7 @@ public:
     }
 };
 
-class MulExpression : Expression {
+class MulExpression : public Expression {
 public:
 	Expression *expression1;
 	Expression *expression2;
@@ -344,7 +346,7 @@ public:
     }
 };
 
-class DivExpression : Expression {
+class DivExpression : public Expression {
 public:
 	Expression *expression1;
 	Expression *expression2;
@@ -354,7 +356,7 @@ public:
     }
 };
 
-class UnaryExpression : Expression {
+class UnaryExpression : public Expression {
 public:
 	Expression * expression;
     UnaryExpression(Expression* e) {
@@ -362,7 +364,7 @@ public:
     }
 };
 
-class NotExpression : Expression {
+class NotExpression : public Expression {
 public:
 	Expression * expression;
     NotExpression(Expression* e) {
@@ -370,27 +372,35 @@ public:
     }
 };
 
-class FunctionCallExpression : Expression {
+class FunctionCallExpression : public Expression {
 public:
-	Identifier * identifier;
+	Identifier *identifier;
 	ArgumentList *argumentList;
+    FunctionCallExpression(Identifier *ident, ArgumentList *argList) {
+        identifier = ident;
+        argumentList = argList;
+    }
 };
 
-class Argument : Expression {
+class Argument : public Expression {
 public:
-	Expression * expression;
+	Expression *expression;
+    Argument(Expression *expr) {
+        expression = expr;
+    }
 };
 
-class Value : Expression {
+class Value : public Expression {
+public:
 };
 
-class IntValue : Value {
+class IntValue : public Value {
 public:
 	int value;
 	IntValue(int v) { value = v; }
 };
 
-class FloatValue : Value {
+class FloatValue : public Value {
 public:
 	float value;
 	FloatValue(float v) { value = v; }

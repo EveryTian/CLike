@@ -18,26 +18,27 @@ void yyerror(const char *);
 %token SEMI COMMA
 
 %union {
-    Node *node;
-    Program *prog;
-    Statement *stmt;
-    Expression *expr;
+    Node                            *node;
+    Program                         *prog;
+    Statement                       *stmt;
+    Expression                      *expr;
 
-    GlobalStatement *glbstmt;
-    GlobalVariableDeclarationStatement *glbvardecstmt;
-    GlobalFunctionDeclarationStatement *glbfundecstmt;
+    // GlobalStatement *glbstmt;
+    // GlobalVariableDeclarationStatement *glbvardecstmt;
+    // GlobalFunctionDeclarationStatement *glbfundecstmt;
+    FunctionDeclarationStatement    *glbfundecstmt;
 
-    VariableDeclarationStatement *vardecstmt;
-    VariableType *vartype;
-    VariableDeclaration *vardec;
-    Variable *var;
-    Identifier *idt;
-    Parameter *para;
-    Block *block;
-    ExpressionStatement *exprstmt;
-    Argument *arg;
+    VariableDeclarationStatement    *vardecstmt;
+    VariableType                    *vartype;
+    VariableDeclaration             *vardec;
+    Variable                        *var;
+    Identifier                      *idt;
+    Parameter                       *para;
+    Block                           *block;
+    ExpressionStatement             *exprstmt;
+    Argument                        *arg;
 
-    GlobalStatementList *glbstmtls;
+    // GlobalStatementList *glbstmtls;
     
     // VariableDeclarationList *vardecls;
     ParameterList *parals;
@@ -48,22 +49,25 @@ void yyerror(const char *);
     std::string *string;
 }
 
-%type <node> program
-%type <glbstmtls> global_statement_list
-%type <glbstmt> global_statement
-%type <stmt> statement variable_declaration_statement function_declaration_statement block
-%type <vartype> variable_type
+%type <node>            program
+// %type <glbstmtls> global_statement_list
+// %type <glbstmt> global_statement function_declaration_staglobal_variable_declaration_statement
+%type <stmt>            statement global_statement function_declaration_statement
+%type <block>           block
+%type <vartype>         variable_type
 // %type <vardecls> variable_declaration_list
-%type <idt> identifier
-%type <parals> parameter_list
-%type <vardecstmtls> variable_declaration_statement_list
-%type <stmtls> statement_list
-%type <para> parameter
+%type <idt>             identifier
+%type <parals>          parameter_list
+%type <vardecstmt>      variable_declaration_statement
+%type <vardecstmtls>    variable_declaration_statement_list
+%type <stmtls>          statement_list global_statement_list
+%type <para>            parameter
 // %type <vardec> variable_declaration
-%type <var> variable
-%type <expr> expression
-%type <value> number
-%type <argls> argument_list
+%type <var>             variable
+%type <expr>            expression
+%type <value>           number
+%type <argls>           argument_list
+%type <arg>             argument
 
 %right '='
 %left OR
@@ -87,7 +91,8 @@ program: global_statement_list {
     ;
 
 global_statement_list: global_statement {
-        $$ = new GlobalStatementList();
+        // $$ = new GlobalStatementList();
+        $$ = new StatementList();
         $$->push_back($1);
     }
     | global_statement_list global_statement {
@@ -112,11 +117,13 @@ variable_declaration_statement:
 
 function_declaration_statement:
     variable_type identifier LP parameter_list RP block {
-        $$ = new GlobalFunctionDeclarationStatement($1, $2, $4, $6);
+        // $$ = new GlobalFunctionDeclarationStatement($1, $2, $4, $6);
+        $$ = new FunctionDeclarationStatement($1, $2, $4, $6);
     }
     // | variable_type LB RB identifier
     | VOID identifier LP parameter_list RP block {
-        $$ = new GlobalFunctionDeclarationStatement(NULL, $2, $4, $6);
+        // $$ = new GlobalFunctionDeclarationStatement(NULL, $2, $4, $6);
+        $$ = new FunctionDeclarationStatement(NULL, $2, $4, $6);
     }
     ;
 
@@ -138,7 +145,7 @@ variable_type:
 
 identifier:
     IDENT_VALUE {
-        $$ = Identifier($1);
+        $$ = new Identifier($1);
     }
     ;
 
@@ -285,8 +292,10 @@ expression:
     | NOT expression {
         $$ = new NotExpression($2);
     }
-    | variable LP argument_list RP {
-        $$ = new FunctionCallExpression()
+    // TODO: Use identifier or variable?
+    // If use variable, ast.hpp should be changed.
+    | identifier LP argument_list RP {
+        $$ = new FunctionCallExpression($1, $3);
     }
     | number {
         $$ = $1;
@@ -308,15 +317,21 @@ number:
     ;
 
 argument_list: 
-    expression {
+    argument {
         $$ = new ArgumentList();
         $$->push_back($1);
     }
-    | argument_list COMMA expression {
+    | argument_list COMMA argument {
         $1->push_back($3);
     }
     | {
         $$ = NULL;
+    }
+    ;
+
+argument:
+    expression {
+        $$ = new Argument($1);
     }
     ;
     
