@@ -1,0 +1,3 @@
+flex clike.l
+gcc lex.yy.c
+./a < test
