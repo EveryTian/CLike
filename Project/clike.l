@@ -2,7 +2,8 @@
 
 #include <string>
 
-// #include "ast.h"
+#include "ast.hpp"
+#include "clike.tab.hh"
 // #include "syntactic.hpp"
 
 #define HANDLE_TOKEN(tokenName) yylval.token = tokenName; return tokenName
