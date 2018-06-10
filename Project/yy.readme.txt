@@ -1,0 +1,17 @@
+﻿REM program
+REM global_statements 
+REM global_statement
+REM variable_declaration_statement  int a, b = 1, c;
+REM function_declaration_statement  一整个函数
+REM variable_type                   int | float | char
+REM variable_declaration_list       a, b = 1, c
+REM identifier                      a
+REM parameter_list                  int a, double b | void
+REM block
+REM variable_declaration_statement_list 多条变量声明
+REM statement_list                      多条语句
+REM parameter                       int a
+REM variable_declaration            a = 5 | b
+REM variable                        a | b[5]
+REM expression
+REM argument_list                   1, 2 * 2
