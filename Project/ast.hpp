@@ -158,7 +158,9 @@ public:
 	virtual void pushto(std::queue<Node*> *q){
         q->push(variableType);
         q->push((Node*)variable);
-        q->push(expression);
+        if (expression) {
+            q->push(expression);
+        }
 	}
 };
 
