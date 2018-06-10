@@ -3,12 +3,13 @@
 #include "ast.hpp"
 #include <string>
 #include <cstdlib>
+#include <stdio.h>
 
 Program *program;
 extern int yylex();
 void yyerror(const char *s) { 
-    std::printf("Error: %s\n", s);
-    std::exit(1); 
+    printf("Error: %s\n", s);
+    exit(1); 
 }
 
 %}
@@ -340,6 +341,4 @@ argument:
     
 %%
 
-int main(void) {
-    return yyparse();
-}
+

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <queue>
 
 class Node;
 class Program;
@@ -54,19 +55,41 @@ typedef std::vector<Argument *> ArgumentList;
 
 class Node {
 public:
+    virtual std::string toString(){
+	}
+	virtual void pushto(std::queue<Node*> *q){
+	}
 };
 
 class Program : public Node {
 public:
 	StatementList *globalStatementList;
+	virtual std::string toString(){
+        return "Program|";
+	}
+    virtual void pushto(std::queue<Node*> *q){
+        if(globalStatementList){
+            for(int i = 0; i < globalStatementList->size(); i++){
+                q->push((Node*)((*globalStatementList)[i]));
+            }
+        }
+	}
 };
 
 class Statement : public Node {
 public:
+    virtual std::string toString(){
+	}
+	virtual void pushto(std::queue<Node*> *q){
+	}
 };
 
 class Expression : public Node {
 public:
+    virtual std::string toString(){
+	}
+	virtual void pushto(std::queue<Node*> *q){
+	}
 };
 
 // class GlobalStatement : Statement {
@@ -83,11 +106,27 @@ public:
         switch (type) {
         case 1:
             variableType = INT;
+            break;
         case 2:
             variableType = FLOAT;
+            break;
         case 3:
             variableType = CHAR;
+            break;
         }
+	}
+    virtual std::string toString(){
+        switch (variableType) {
+            case INT:
+                return "int|";
+            case FLOAT:
+                return "float|";
+            case CHAR:
+                return "char|";
+        }
+	}
+	virtual void pushto(std::queue<Node*> *q){
+
 	}
 };
 
@@ -113,6 +152,14 @@ public:
         variable = var;
         expression = expr;
     }
+    virtual std::string toString(){
+        return "VarDec vType var expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(variableType);
+        q->push((Node*)variable);
+        q->push(expression);
+	}
 };
 
 // class VariableDeclaration : Node {
@@ -129,6 +176,15 @@ public:
         identifier = ident;
         indexExpression = indexExpr;
     }
+    virtual std::string toString(){
+        return "id expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push((Node*)identifier);
+        if(indexExpression){
+            q->push(indexExpression);
+        }
+	}
 };
 
 class Identifier : public Expression {
@@ -137,6 +193,12 @@ public:
     Identifier(std::string *ident) {
         identifier = ident;
     }
+    virtual std::string toString(){
+        return *identifier + "|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+
+	}
 };
 
 // class GlobalFunctionDeclarationStatement : GlobalStatement {
@@ -152,6 +214,23 @@ public:
         parameterList = paraList;
         block = blk;
     }
+    virtual std::string toString(){
+        return "FuncDec vType id paraList block|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        if(variableType){
+            q->push(variableType);
+        }
+        q->push(identifier);
+        if(parameterList){
+            for(int i = 0; i < parameterList->size(); i++){
+                q->push((Node*)((*parameterList)[i]));
+            }
+        }
+        if(block){
+            q->push((Node*)block);
+        }
+	}
 };
 
 class Parameter : public Node {
@@ -162,6 +241,13 @@ public:
         variableType = varType;
         identifier = ident;
     }
+    virtual std::string toString(){
+        return "vType id|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(variableType);
+        q->push((Node*)identifier);
+	}
 };
 
 class Block : public Statement {
@@ -172,6 +258,21 @@ public:
         variableDeclarationstatementList = vdsl;
         statementList = sl;
     }
+    virtual std::string toString(){
+        return "varDecStmtList stmtList|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        if(variableDeclarationstatementList){
+            for(int i = 0; i < variableDeclarationstatementList->size(); i++){
+                q->push((Node*)((*variableDeclarationstatementList)[i]));
+            }
+        }
+        if(statementList){
+            for(int i = 0; i < statementList->size(); i++){
+                q->push((Node*)((*statementList)[i]));
+            }
+        }
+	}
 };
 
 class ExpressionStatement : public Statement {
@@ -180,6 +281,12 @@ public:
     ExpressionStatement(Expression *e) {
         expression = e;
     }
+    virtual std::string toString(){
+        return "expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression);
+	}
 };
 
 class ReturnStatement : public Statement {
@@ -188,6 +295,12 @@ public:
     ReturnStatement(Expression *e) {
         expression = e;
     }
+    virtual std::string toString(){
+        return "return expr|";
+	}
+    virtual void pushto(std::queue<Node*> *q){
+        q->push(expression);
+	}
 };
 
 class WhileStatement : public Statement {
@@ -198,6 +311,13 @@ public:
         expression = expr;
         statement = stmt;
     }
+    virtual std::string toString(){
+        return "while expr stmt|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression);
+        q->push(statement);
+	}
 };
 
 class ForStatement : public Statement {
@@ -212,6 +332,15 @@ public:
         expression3 = expr3;
         statement = stmt;
     }
+    virtual std::string toString(){
+        return "for expr expr expr stmt|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+        q->push(expression3);
+        q->push(statement);
+	}
 };
 
 class IfStatement : public Statement {
@@ -224,6 +353,16 @@ public:
         ifStatement = ts;
         elseStatement = es;
     }
+    virtual std::string toString(){
+        return "if expr stmt else stmt|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression);
+        q->push(ifStatement);
+        if(elseStatement){
+            q->push(elseStatement);
+        }
+	}
 };
 
 class AssignExpression : public Expression {
@@ -234,6 +373,13 @@ public:
         variable = v;
         expression = e;
     }
+    virtual std::string toString(){
+        return "assign var expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(variable);
+        q->push(expression);
+	}
 };
 
 class AndExpression : public Expression {
@@ -244,6 +390,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr and expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class OrExpression : public Expression {
@@ -254,6 +407,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr or expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class GtExpression : public Expression {
@@ -264,6 +424,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr gt expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class LtExpression : public Expression {
@@ -274,6 +441,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr lt expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class GeExpression : public Expression {
@@ -284,6 +458,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr ge expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class LeExpression : public Expression {
@@ -294,6 +475,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr le expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class EqExpression : public Expression {
@@ -304,6 +492,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr eq expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class NeExpression : public Expression {
@@ -314,6 +509,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr ne expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class AddExpression : public Expression {
@@ -324,6 +526,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr + expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class SubExpression : public Expression {
@@ -334,6 +543,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr - expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class MulExpression : public Expression {
@@ -344,6 +560,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr * expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class DivExpression : public Expression {
@@ -354,6 +577,13 @@ public:
         expression1 = e1;
         expression2 = e2;
     }
+    virtual std::string toString(){
+        return "expr / expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression1);
+        q->push(expression2);
+	}
 };
 
 class UnaryExpression : public Expression {
@@ -362,6 +592,12 @@ public:
     UnaryExpression(Expression* e) {
         expression = e;
     }
+    virtual std::string toString(){
+        return "-expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression);
+	}
 };
 
 class NotExpression : public Expression {
@@ -370,6 +606,12 @@ public:
     NotExpression(Expression* e) {
         expression = e;
     }
+    virtual std::string toString(){
+        return "!expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression);
+	}
 };
 
 class FunctionCallExpression : public Expression {
@@ -380,6 +622,17 @@ public:
         identifier = ident;
         argumentList = argList;
     }
+    virtual std::string toString(){
+        return "call id argList|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(identifier);
+        if(argumentList){
+            for(int i = 0; i < argumentList->size(); i++){
+                q->push((Node*)((*argumentList)[i]));
+            }
+        }
+	}
 };
 
 class Argument : public Expression {
@@ -388,6 +641,12 @@ public:
     Argument(Expression *expr) {
         expression = expr;
     }
+    virtual std::string toString(){
+        return "expr|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+        q->push(expression);
+	}
 };
 
 class Value : public Expression {
@@ -398,12 +657,24 @@ class IntValue : public Value {
 public:
 	int value;
 	IntValue(int v) { value = v; }
+	virtual std::string toString(){
+        return std::to_string(value)+"|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+
+	}
 };
 
 class FloatValue : public Value {
 public:
 	float value;
 	FloatValue(float v) { value = v; }
+	virtual std::string toString(){
+        return std::to_string(value)+"|";
+	}
+	virtual void pushto(std::queue<Node*> *q){
+
+	}
 };
 
 #endif
