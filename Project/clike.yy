@@ -7,12 +7,11 @@
 
 Program *program;
 extern int yylex();
-void yyerror(const char *s) { 
-    printf("Error: %s\n", s);
-    exit(1); 
-}
+extern void yyerror(const char *s);
 
 %}
+
+%locations
 
 %token <string> INT_VALUE FLOAT_VALUE IDENT_VALUE
 %token LCB RCB LP RP LB RB SQ DQ

@@ -6,7 +6,6 @@
 #include "clike.tab.hh"
 
 #define YYSTYPE union {std::string *string}
-// #include "syntactic.hpp"
 
 #define HANDLE_TOKEN(tokenName) return tokenName
 #define HANDLE_TOKEN_WITH_VALUE(tokenName) yylval.string = new std::string(yytext, yyleng); return tokenName
@@ -14,6 +13,7 @@
 %}
 
 %option noyywrap
+%option yylineno
 
 whitespace          [ \t\n\r]
 integer             [0-9]+
@@ -127,3 +127,8 @@ charKey             "char"
 {bitOrOp}           { HANDLE_TOKEN(BOR); }
 {bitNotOp}          { HANDLE_TOKEN(BNOT); }
 */
+
+void yyerror(const char *s) { 
+    printf("Error: %s [Line %d]\n", s, yylineno);
+    exit(1); 
+}
