@@ -3,58 +3,45 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdio.h>
-#include <queue>
 #include <vector>
 #include <unordered_map>
 #include "syb.h"
+#include <fstream>
+
+using namespace std;
 
 extern Program* program;
-extern int yyparse();
-using namespace std;
+
 void addId(string identifier, VariableType* type ,ParameterList* paraList,int address, unordered_map<string, Symbol*>* hashList);
 VariableType* typeCheck(Expression* exp1, Expression* exp2,unordered_map<string, Symbol*>* hashList);
 void declareCheck(string id, unordered_map<string, Symbol*>* hashList, string kind);
-void semanticAnalysis(Node * n);
+void _semanticAnalysis(Node * n);
+void semanticAnalysis(void);
 
 unordered_map<string, Symbol*>* funcTable = new unordered_map<string, Symbol*>();
 vector <unordered_map<string, Symbol*>*> *varEnv = new vector <unordered_map<string, Symbol*>*>();
 
-int main(void) {
-    int size = 0;
-    queue <Node*> *q = new queue<Node*>();
+void semanticAnalysis(void) {
+    fstream syb;
 
-    yyparse();
-    // level order travelsal to print the AST tree
-    cout << "|" << program->toString() <<"|"<< endl;
-    program->pushto(q);
-    while(!q->empty()){
-        size = q->size();
-        cout << "|";
-        for(int i = 0; i < size; i++){
-            Node* temp = q->front();
-            cout << temp->toString()<<"|";
-            temp->pushto(q);
-            q->pop();
-        }
-        cout<<endl;
-    }
+    syb.open("SymbolTable.txt", ios_base::out);
 
-    semanticAnalysis(program);
+    _semanticAnalysis(program);
 
-    cout << "function symbol table contains:"<<endl;
-    cout << "function name   return type    param type    environment id"<<endl;
+    syb << "Function Symbol Table:"<<endl;
+    syb << "Function Name   Return Type    Param Type    Environment"<<endl;
     for(auto it = funcTable->begin(); it != funcTable->end(); ++it)
-        cout << it->second->toString() << endl;
+        syb << it->second->toString() << endl;
 
-    cout << "variable symbol table contains:"<<endl;
-    cout << "variable name   type    environment"<<endl;
+    syb <<endl<<endl<< "Variable Symbol Table:"<<endl;
+    syb << "Variable Name   Type    Environment"<<endl;
     for(int i = 0; i < varEnv->size(); ++i)
         for(auto it = varEnv->at(i)->begin(); it != varEnv->at(i)->end(); ++it)
-            cout << it->second->toString() << endl;
-    return 0;
+            syb << it->second->toString() << endl;
+    syb.close();
 }
 
-void semanticAnalysis(Node * n){
+void _semanticAnalysis(Node * n){
     queue <Node*> *q = new queue<Node*>();
 
     n->pushto(q);
@@ -85,7 +72,7 @@ void semanticAnalysis(Node * n){
     for(int i = 0; i < size; i++){
         Node* temp = q->front();
         q->pop();
-        semanticAnalysis(temp);
+        _semanticAnalysis(temp);
     }
     if(n->isNeedTypeCheck){
         n->type = typeCheck(n->expression1, n->expression2, varEnv->back());
