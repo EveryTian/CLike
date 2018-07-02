@@ -3,11 +3,8 @@ YACC = bison
 CC = g++
 OBJECT=clike
 
-$(OBJECT): lex.yy.c  $(OBJECT).tab.hh ast.hpp $(OBJECT).tab.cc syb.cpp
-	$(CC) lex.yy.c $(OBJECT).tab.cc syb.cpp -o $(OBJECT) -lfl -std=c++11
-
-$(OBJECT).tab.o: 
-	$(CC) -c $(OBJECT).tab.c -lm
+$(OBJECT): lex.yy.c  $(OBJECT).tab.hh ast.hpp $(OBJECT).tab.cc semantic.cpp ast.cpp main.cpp
+	$(CC) lex.yy.c $(OBJECT).tab.cc semantic.cpp ast.cpp main.cpp -o $(OBJECT) -lfl -std=c++11
 
 $(OBJECT).tab.cc  $(OBJECT).tab.hh: $(OBJECT).yy
 	$(YACC) -d $(OBJECT).yy

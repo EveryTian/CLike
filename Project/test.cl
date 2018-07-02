@@ -8,7 +8,7 @@ int foo (int x, int y){
 void foo2(int n){
     int tmp = 1;
     
-    tmp = foo(n, 8);
+    tmp = foo(n, foo(1,2));
 }
 
 int main (void){
