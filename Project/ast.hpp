@@ -79,8 +79,8 @@ public:
 class Program : public Node {
 public:
 	StatementList *globalStatementList;
-	virtual std::string toString(){
-        return "#Program **glbDecList";
+	virtual std::string toString() {
+        return globalStatementList ? "#Program **glbDecList" : "#Program";
 	}
     virtual void pushto(std::queue<Node*> *q){
         if(globalStatementList){
@@ -240,10 +240,9 @@ public:
         block = blk;
     }
     virtual std::string toString(){
-        if(parameterList){
+        if (parameterList) {
             return "#StmtFuncDec *vType *id **paraList *block";
-        }
-        else{
+        } else {
             return "#StmtFuncDec *vType *id *block";
         }
 	}
@@ -288,11 +287,11 @@ public:
         statementList = sl;
     }
     virtual std::string toString(){
-        if(variableDeclarationstatementList){
-            return "#StmtBlock **varDecStmtList **stmtList";
+        if (variableDeclarationstatementList) {
+            return statementList ? "#StmtBlock **varDecStmtList **stmtList" : "#StmtBlock **varDecStmtList";
         }
         else{
-            return "#StmtBlock **stmtList";
+            return statementList ? "#StmtBlock **stmtList" : "#StmtBlock";
         }
 	}
 	virtual void pushto(std::queue<Node*> *q){
@@ -703,7 +702,6 @@ public:
         return std::to_string(value);
 	}
 	virtual void pushto(std::queue<Node*> *q){
-
 	}
 };
 
