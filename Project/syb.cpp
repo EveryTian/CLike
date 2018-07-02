@@ -11,14 +11,17 @@
 extern Program* program;
 extern int yyparse();
 using namespace std;
-void addId(string identifier, string type ,int address, unordered_map<string, Symbol*>* hashList);
-void typeCheck(string id1, string id2,unordered_map<string, Symbol*>* hashList);
+void addId(string identifier, VariableType* type ,ParameterList* paraList,int address, unordered_map<string, Symbol*>* hashList);
+VariableType* typeCheck(Expression* exp1, Expression* exp2,unordered_map<string, Symbol*>* hashList);
+void declareCheck(string id, unordered_map<string, Symbol*>* hashList, string kind);
+void semanticAnalysis(Node * n);
+
+unordered_map<string, Symbol*>* funcTable = new unordered_map<string, Symbol*>();
+vector <unordered_map<string, Symbol*>*> *varEnv = new vector <unordered_map<string, Symbol*>*>();
 
 int main(void) {
-    queue<Node*> *q = new queue<Node*>();
-    vector <unordered_map<string, Symbol*>*> *funcEnv = new vector <unordered_map<string, Symbol*>*>();
-    vector <unordered_map<string, Symbol*>*> *varEnv = new vector <unordered_map<string, Symbol*>*>();
     int size = 0;
+    queue <Node*> *q = new queue<Node*>();
 
     yyparse();
     // level order travelsal to print the AST tree
@@ -36,49 +39,77 @@ int main(void) {
         cout<<endl;
     }
 
-    program->pushto(q);
-    while(!q->empty()){
-        Node* temp = q->back();
-	q->pop();
-cout << temp->toString()<<endl;
-        if(temp->isFuncDec){
-        funcEnv->push_back(new unordered_map<string, Symbol*> ());
-        varEnv->push_back(new unordered_map<string, Symbol*> ());
-            if(temp->variableType)
-                addId(temp->identifier->toString(), temp->variableType->toString(),funcEnv->size(),funcEnv->back());
-            else
-                addId(temp->identifier->toString(), "void",funcEnv->size(),funcEnv->back());
-        }
-        if(temp->isVarDec){
-            if(temp->variableType)
-                addId(temp->variable->identifier->toString(), temp->variableType->toString(),funcEnv->size(),varEnv->back());
-            else
-                addId(temp->variable->identifier->toString(), "void",funcEnv->size(),varEnv->back());
-        }
-        /*if(temp->isNeedTypeCheck){
-            typeCheck(temp->expression1->)
-        }*/
-        temp->pushto(q);
-
-    }
-
+    semanticAnalysis(program);
 
     cout << "function symbol table contains:"<<endl;
-    cout << "function name   return type    location"<<endl;
-    for(int i = 0; i < funcEnv->size(); ++i)
-        for(auto it = funcEnv->at(i)->begin(); it != funcEnv->at(i)->end(); ++it)
-            cout << it->second->toString() << endl;
+    cout << "function name   return type    param type    environment id"<<endl;
+    for(auto it = funcTable->begin(); it != funcTable->end(); ++it)
+        cout << it->second->toString() << endl;
 
     cout << "variable symbol table contains:"<<endl;
-    cout << "variable name   type    location"<<endl;
+    cout << "variable name   type    environment"<<endl;
     for(int i = 0; i < varEnv->size(); ++i)
         for(auto it = varEnv->at(i)->begin(); it != varEnv->at(i)->end(); ++it)
             cout << it->second->toString() << endl;
     return 0;
 }
 
-void addId(string identifier, string type ,int address, unordered_map<string, Symbol*>* hashList){
-    Symbol* temp = new Symbol(identifier,type, address);
+void semanticAnalysis(Node * n){
+    queue <Node*> *q = new queue<Node*>();
+
+    n->pushto(q);
+    if(n->isFuncDec){
+        varEnv->push_back(new unordered_map<string, Symbol*> ());
+        if(n->variableType)
+            addId(n->identifier->toString(), n->variableType, n->parameterList, funcTable->size()+1,funcTable);
+        else
+            addId(n->identifier->toString(), new VariableType(4), n->parameterList,funcTable->size()+1,funcTable);
+        if(n->parameterList != nullptr){
+            for(auto it = n->parameterList->begin(); it != n->parameterList->end(); ++it)
+                addId((*it)->identifier->toString(), (*it)->variableType,nullptr, varEnv->size(), varEnv->back());
+        }
+    }
+    if(n->isVarDec){
+        if(n->variableType)
+            addId(n->variable->identifier->toString(), n->variableType,nullptr,varEnv->size(),varEnv->back());
+        else
+            addId(n->variable->identifier->toString(), new VariableType(4), nullptr,varEnv->size(),varEnv->back());
+    }
+    if(n->isNeedFuncDeclareCheck){
+        declareCheck(n->identifier->toString(), funcTable, "Function");
+    }
+    if(n->isNeedVarDeclareCheck){
+        declareCheck(n->identifier->toString(), varEnv->back(), "Variable");
+    }
+    int size = q->size();
+    for(int i = 0; i < size; i++){
+        Node* temp = q->front();
+        q->pop();
+        semanticAnalysis(temp);
+    }
+    if(n->isNeedTypeCheck){
+        n->type = typeCheck(n->expression1, n->expression2, varEnv->back());
+    }
+    if(n->isNeedFuncDeclareCheck){
+        if(n->argumentList != nullptr){
+            string id = n->identifier->toString();
+            ParameterList* paraList = (*funcTable)[id]->paraList;
+            if(paraList->size() < n->argumentList->size()){
+                cout<<"Too many arguments for "<<id<<endl;
+                exit(-1);
+            }
+            if(paraList->size() > n->argumentList->size()){
+                cout<<"Too few arguments for "<<id<<endl;
+                exit(-1);
+            }
+            for(int i = 0; i < paraList->size(); i++){
+                typeCheck((Expression*)((*paraList)[i]), (*(n->argumentList))[i]->expression,varEnv->back());
+            }
+        }
+    }
+}
+void addId(string identifier, VariableType* type ,ParameterList* paraList, int address, unordered_map<string, Symbol*>* hashList){
+    Symbol* temp = new Symbol(identifier,type,paraList, address);
     pair<string,Symbol*> kvPair(identifier,temp);
 
     if(hashList->find(identifier) == hashList->end()){
@@ -90,15 +121,89 @@ void addId(string identifier, string type ,int address, unordered_map<string, Sy
     }
 }
 
-void typeCheck(string id1, string id2,unordered_map<string, Symbol*>* hashList){
-    if(hashList->find(id1) == hashList->end()){
-        cout<<id1<<" is undefined!"<<endl;
+VariableType* typeCheck(Expression* exp1, Expression* exp2,unordered_map<string, Symbol*>* hashList){
+    if(exp1->isNeedVarDeclareCheck){
+        string id1 = exp1->identifier->toString();
+        if(exp2->isNeedVarDeclareCheck){
+            string id2 = exp2->identifier->toString();
+
+            if((*hashList)[id1]->type->toString() != (*hashList)[id2]->type->toString()){
+                cout<<id1<<" and "<<id2<<" cause a type conflict"<<endl;
+                exit(-1);
+            }
+        }
+        else if (exp2->isNeedFuncDeclareCheck){
+            string id2 = exp2->identifier->toString();
+
+            if((*hashList)[id1]->type->toString() != (*funcTable)[id2]->type->toString()){
+                cout<<id1<<" and "<<id2<<" cause a type conflict"<<endl;
+                exit(-1);
+            }
+        }
+        else{
+            if((*hashList)[id1]->type->toString() != exp2->type->toString()){
+                cout<<id1<<" causes a type conflict"<<endl;
+                exit(-1);
+            }
+        }
+        return (*hashList)[id1]->type;
     }
-    else if(hashList->find(id2) == hashList->end()){
-        cout<<id2<<" is undefined!"<<endl;
+    else if(exp1->isNeedFuncDeclareCheck){
+        string id1 = exp1->identifier->toString();
+        if(exp2->isNeedVarDeclareCheck){
+            string id2 = exp2->identifier->toString();
+
+            if((*funcTable)[id1]->type->toString() != (*hashList)[id2]->type->toString()){
+                cout<<id1<<" and "<<id2<<" cause a type conflict"<<endl;
+                exit(-1);
+            }
+        }
+        else if (exp2->isNeedFuncDeclareCheck){
+            string id2 = exp2->identifier->toString();
+
+            if((*funcTable)[id1]->type->toString() != (*funcTable)[id2]->type->toString()){
+                cout<<id1<<" and "<<id2<<" cause a type conflict"<<endl;
+                exit(-1);
+            }
+        }
+        else{
+            if((*funcTable)[id1]->type->toString() != exp2->type->toString()){
+                cout<<id1<<" causes a type conflict"<<endl;
+                exit(-1);
+            }
+        }
+        return (*funcTable)[id1]->type;
     }
     else{
-        if((*hashList)[id1]->type != (*hashList)[id2]->type)
-            cout<<id1<<" and "<<id2<<" cause a type conflict"<<endl;
+        if(exp2->isNeedVarDeclareCheck){
+            string id2 = exp2->identifier->toString();
+
+            if(exp1->type->toString() != (*hashList)[id2]->type->toString()){
+                cout<<id2<<" causes a type conflict"<<endl;
+                exit(-1);
+            }
+        }
+        else if (exp2->isNeedFuncDeclareCheck){
+            string id2 = exp2->identifier->toString();
+
+            if(exp1->type->toString() != (*funcTable)[id2]->type->toString()){
+                cout<<id2<<" causes a type conflict"<<endl;
+                exit(-1);
+            }
+        }
+        else{
+            if(exp1->type->toString() != exp2->type->toString()){
+                cout<<"Expressions cause a type conflict"<<endl;
+                exit(-1);
+            }
+        }
+        return exp1->type;
+    }
+}
+
+void declareCheck(string id, unordered_map<string, Symbol*>* hashList, string kind){
+    if(hashList->find(id) == hashList->end()){
+        cout<<kind<<" "<<id<<" is undefined!"<<endl;
+        exit(-1);
     }
 }

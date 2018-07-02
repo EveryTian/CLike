@@ -7,12 +7,11 @@
 
 Program *program;
 extern int yylex();
-void yyerror(const char *s) { 
-    printf("Error: %s\n", s);
-    exit(1); 
-}
+extern void yyerror(const char *s);
 
 %}
+
+%locations
 
 %token <string> INT_VALUE FLOAT_VALUE IDENT_VALUE
 %token LCB RCB LP RP LB RB SQ DQ
@@ -116,6 +115,9 @@ global_statement:
 variable_declaration_statement:
     variable_type variable ASSIGN expression SEMI {
         $$ = new VariableDeclarationStatement($1, $2, $4);
+    }
+    | variable_type variable SEMI {
+        $$ = new VariableDeclarationStatement($1, $2, NULL);
     }
     ;
 
