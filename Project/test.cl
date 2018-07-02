@@ -1,8 +1,15 @@
-int main(void){
-    int a = 1;
-    float b[10] = 1;
+int main (void){
+    int m = 1;
 
-    b[0] = a;
-	
-    return a + b[4];
+    int n = 2;
+
+    m = m * n;
+    return 0;
+}	
+
+int foo (int x, int y){
+    int res = 0;
+
+    res = x + y;
+    return res;
 }
