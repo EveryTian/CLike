@@ -58,11 +58,18 @@ public:
     bool isFuncDec = false;
     bool isVarDec = false;
     bool isNeedTypeCheck = false;
+    bool isNeedFuncDeclareCheck = false;
+    bool isNeedVarDeclareCheck = false;
     bool isUpdateEnv = false;
     bool isRollbackEnv = false;
+    ParameterList *parameterList = nullptr;
+    ArgumentList *argumentList = nullptr;
     VariableType* variableType = nullptr;
+    VariableType* type = nullptr;
     Variable *variable = nullptr;
     Identifier *identifier = nullptr;
+    Expression *expression1 = nullptr;
+    Expression *expression2 = nullptr;
     virtual std::string toString(){
 	}
 	virtual void pushto(std::queue<Node*> *q){
@@ -72,8 +79,8 @@ public:
 class Program : public Node {
 public:
 	StatementList *globalStatementList;
-	virtual std::string toString(){
-        return "#Program **glbDecList";
+	virtual std::string toString() {
+        return globalStatementList ? "#Program **glbDecList" : "#Program";
 	}
     virtual void pushto(std::queue<Node*> *q){
         if(globalStatementList){
@@ -107,7 +114,7 @@ public:
 class VariableType : public Node {
 public:
 	enum VariableTypeEnum {
-		INT = 1, FLOAT = 2, CHAR = 3
+		INT = 1, FLOAT = 2, CHAR = 3, VOID = 4
 	};
 	VariableTypeEnum variableType;
 	VariableType(int type) {
@@ -121,6 +128,9 @@ public:
         case 3:
             variableType = CHAR;
             break;
+        case 4:
+            variableType = VOID;
+            break;
         }
 	}
     std::string toString(){
@@ -131,6 +141,8 @@ public:
                 return "float";
             case CHAR:
                 return "char";
+	    case VOID:
+                return "void";
         }
 	}
 	virtual void pushto(std::queue<Node*> *q){
@@ -158,6 +170,9 @@ public:
         variableType = varType;
         variable = var;
         expression = expr;
+        isNeedTypeCheck = true;
+        expression1 = (Expression*)var;
+        expression2 = expr;
     }
     virtual std::string toString(){
         return "#VarDec *vType *var *expr";
@@ -179,6 +194,7 @@ class Variable : public Expression {
 public:
 	Expression *indexExpression;
     Variable(Identifier *ident, Expression *indexExpr) {
+    isNeedVarDeclareCheck = true;
         identifier = ident;
         indexExpression = indexExpr;
     }
@@ -215,7 +231,6 @@ public:
 // class GlobalFunctionDeclarationStatement : GlobalStatement {
 class FunctionDeclarationStatement : public Statement {
 public:
-	ParameterList *parameterList;
 	Block *block;
     FunctionDeclarationStatement(VariableType *varType, Identifier *ident, ParameterList *paraList, Block *blk) {
         isFuncDec = true;
@@ -225,10 +240,9 @@ public:
         block = blk;
     }
     virtual std::string toString(){
-        if(parameterList){
+        if (parameterList) {
             return "#StmtFuncDec *vType *id **paraList *block";
-        }
-        else{
+        } else {
             return "#StmtFuncDec *vType *id *block";
         }
 	}
@@ -252,6 +266,7 @@ class Parameter : public Node {
 public:
     Parameter(VariableType *varType, Identifier *ident) {
         variableType = varType;
+	type = varType;
         identifier = ident;
     }
     virtual std::string toString(){
@@ -272,11 +287,11 @@ public:
         statementList = sl;
     }
     virtual std::string toString(){
-        if(variableDeclarationstatementList){
-            return "#StmtBlock **varDecStmtList **stmtList";
+        if (variableDeclarationstatementList) {
+            return statementList ? "#StmtBlock **varDecStmtList **stmtList" : "#StmtBlock **varDecStmtList";
         }
         else{
-            return "#StmtBlock **stmtList";
+            return statementList ? "#StmtBlock **stmtList" : "#StmtBlock";
         }
 	}
 	virtual void pushto(std::queue<Node*> *q){
@@ -389,25 +404,22 @@ public:
 
 class AssignExpression : public Expression {
 public:
-	Expression *expression;
     AssignExpression(Variable *v, Expression *e) {
         isNeedTypeCheck = true;
-        variable = v;
-        expression = e;
+	expression1 = v;
+        expression2 = e;
     }
     virtual std::string toString(){
         return "#Assign *var *expr";
 	}
 	virtual void pushto(std::queue<Node*> *q){
-        q->push(variable);
-        q->push(expression);
+        q->push(expression1);
+        q->push(expression2);
 	}
 };
 
 class AndExpression : public Expression {
 public:
-	Expression *expression1;
-	Expression *expression2;
     AndExpression(Expression *e1, Expression *e2) {
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -424,8 +436,6 @@ public:
 
 class OrExpression : public Expression {
 public:
-	Expression *expression1;
-	Expression *expression2;
     OrExpression(Expression *e1, Expression *e2) {
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -442,8 +452,6 @@ public:
 
 class GtExpression : public Expression {
 public:
-	Expression *expression1;
-	Expression *expression2;
     GtExpression(Expression *e1, Expression *e2){
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -460,8 +468,6 @@ public:
 
 class LtExpression : public Expression {
 public:
-	Expression *expression1;
-	Expression *expression2;
     LtExpression(Expression *e1, Expression *e2) {
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -478,8 +484,6 @@ public:
 
 class GeExpression : public Expression {
 public:
-	Expression * expression1;
-	Expression *expression2;
     GeExpression(Expression *e1, Expression *e2) {
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -496,8 +500,6 @@ public:
 
 class LeExpression : public Expression {
 public:
-	Expression * expression1;
-	Expression *expression2;
     LeExpression(Expression *e1, Expression *e2) {
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -514,8 +516,6 @@ public:
 
 class EqExpression : public Expression {
 public:
-	Expression *expression1;
-	Expression *expression2;
     EqExpression(Expression *e1, Expression *e2) {
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -532,8 +532,6 @@ public:
 
 class NeExpression : public Expression {
 public:
-	Expression *expression1;
-	Expression *expression2;
     NeExpression(Expression *e1, Expression *e2) {
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -550,8 +548,6 @@ public:
 
 class AddExpression : public Expression {
 public:
-	Expression *expression1;
-	Expression *expression2;
     AddExpression(Expression *e1, Expression *e2) {
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -568,8 +564,6 @@ public:
 
 class SubExpression : public Expression {
 public:
-	Expression *expression1;
-	Expression *expression2;
     SubExpression(Expression *e1, Expression *e2) {
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -586,8 +580,6 @@ public:
 
 class MulExpression : public Expression {
 public:
-	Expression *expression1;
-	Expression *expression2;
     MulExpression(Expression *e1, Expression *e2) {
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -604,8 +596,6 @@ public:
 
 class DivExpression : public Expression {
 public:
-	Expression *expression1;
-	Expression *expression2;
     DivExpression(Expression *e1, Expression *e2) {
         isNeedTypeCheck = true;
         expression1 = e1;
@@ -627,7 +617,7 @@ public:
         expression = e;
     }
     virtual std::string toString(){
-        return "#Unary *expr";
+        return "#Uminus *expr";
 	}
 	virtual void pushto(std::queue<Node*> *q){
         q->push(expression);
@@ -650,8 +640,8 @@ public:
 
 class FunctionCallExpression : public Expression {
 public:
-	ArgumentList *argumentList;
     FunctionCallExpression(Identifier *ident, ArgumentList *argList) {
+    isNeedFuncDeclareCheck = true;
         isUpdateEnv = true;
         identifier = ident;
         argumentList = argList;
@@ -695,7 +685,7 @@ public:
 class IntValue : public Value {
 public:
 	int value;
-	IntValue(int v) { value = v; }
+	IntValue(int v) { value = v; type = new VariableType(1); }
 	virtual std::string toString(){
         return std::to_string(value);
 	}
@@ -707,12 +697,11 @@ public:
 class FloatValue : public Value {
 public:
 	float value;
-	FloatValue(float v) { value = v; }
+	FloatValue(float v) { value = v;type = new VariableType(2); }
 	virtual std::string toString(){
         return std::to_string(value);
 	}
 	virtual void pushto(std::queue<Node*> *q){
-
 	}
 };
 
