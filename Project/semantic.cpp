@@ -29,15 +29,15 @@ void semanticAnalysis() {
     _semanticAnalysis(program);
 
     syb << "Function Symbol Table:"<<endl;
-    syb << "Function Name   Return Type    Param Type    Environment"<<endl;
+    syb << "Env    Function Name   Return Type    Param Type"<<endl;
     for(auto it = funcTable->begin(); it != funcTable->end(); ++it)
-        syb << it->second->toString() << endl;
+        it->second->print(&syb);
 
     syb <<endl<<endl<< "Variable Symbol Table:"<<endl;
-    syb << "Variable Name   Type    Environment"<<endl;
+    syb << "Env    Variable Name   Type"<<endl;
     for(int i = 0; i < varEnv->size(); ++i)
         for(auto it = varEnv->at(i)->begin(); it != varEnv->at(i)->end(); ++it)
-            syb << it->second->toString() << endl;
+            it->second->print(&syb);
     syb.close();
 }
 
