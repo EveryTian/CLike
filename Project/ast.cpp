@@ -9,9 +9,9 @@
 using namespace std;
 
 extern Program* program;
-void printAST(void);
+void printAST();
 
-void printAST(void) {
+void printAST() {
     int size = 0;
     queue <Node*> *q = new queue<Node*>();
     fstream ast;
