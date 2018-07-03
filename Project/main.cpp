@@ -13,13 +13,16 @@ extern int yyparse();
 extern void printAST();
 extern void semanticAnalysis();
 extern void createStackFrame();
+extern void translate();
+
 using namespace std;
 
 int main(void) {
     yyparse();
     printAST();
     semanticAnalysis();
-	createStackFrame();
+    createStackFrame();
+    translate();
     return 0;
 }
 

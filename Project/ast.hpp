@@ -62,6 +62,7 @@ public:
     bool isNeedVarDeclareCheck = false;
     bool isUpdateEnv = false;
     bool isRollbackEnv = false;
+    int value = 0;
     ParameterList *parameterList = nullptr;
     ArgumentList *argumentList = nullptr;
     VariableType* variableType = nullptr;
@@ -684,7 +685,6 @@ public:
 
 class IntValue : public Value {
 public:
-	int value;
 	IntValue(int v) { value = v; type = new VariableType(1); }
 	virtual std::string toString(){
         return std::to_string(value);
