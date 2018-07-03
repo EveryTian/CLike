@@ -16,12 +16,12 @@ void addId(string identifier, VariableType* type ,ParameterList* paraList,int ad
 VariableType* typeCheck(Expression* exp1, Expression* exp2,unordered_map<string, Symbol*>* hashList);
 void declareCheck(string id, unordered_map<string, Symbol*>* hashList, string kind);
 void _semanticAnalysis(Node * n);
-void semanticAnalysis(void);
+void semanticAnalysis();
 
 unordered_map<string, Symbol*>* funcTable = new unordered_map<string, Symbol*>();
 vector <unordered_map<string, Symbol*>*> *varEnv = new vector <unordered_map<string, Symbol*>*>();
 
-void semanticAnalysis(void) {
+void semanticAnalysis() {
     fstream syb;
 
     syb.open("SymbolTable.txt", ios_base::out);
@@ -103,7 +103,7 @@ void addId(string identifier, VariableType* type ,ParameterList* paraList, int a
         hashList->insert(kvPair);
     }
     else{
-        cout<<endl<<identifier<<" is redefined!"<<endl;
+        cout<<identifier<<" is redefined!"<<endl;
         exit(-1);
     }
 }
