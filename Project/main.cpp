@@ -22,7 +22,7 @@ int main(void) {
     printAST();
     semanticAnalysis();
     createStackFrame();
-    translate();
+    //translate();
     return 0;
 }
 

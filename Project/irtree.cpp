@@ -16,6 +16,22 @@ void _translate(Node * n);
 
 void translate(){
     _translate(program);
+    queue <TreeNode*> *q = new queue<TreeNode*>();
+    // level order travelsal to print the AST tree
+    cout << "|" << root->toString() <<"|"<< endl;
+    root->pushto(q);
+    while(!q->empty()){
+        int size = q->size();
+        cout << "|";
+        for(int i = 0; i < size; i++){
+            TreeNode* temp = q->front();
+            cout << temp->toString()<<"|";
+            temp->pushto(q);
+            q->pop();
+        }
+        cout<<endl;
+    }
+
 }
 
 void _translate(Node * n){
@@ -130,7 +146,7 @@ void _translate(Node * n){
         TreeNode* block;
         int size = tempNode->size();
 
-        if(size >= 2){
+        if(size > 2){
             TreeNode* left = tempNode->front();
             tempNode->pop();
             TreeNode* right = tempNode->front();
@@ -142,11 +158,19 @@ void _translate(Node * n){
             }
             tempNode->push(block);
         }
+        else if (size == 2){
+            TreeNode* left = tempNode->front();
+            tempNode->pop();
+            TreeNode* right = tempNode->front();
+            tempNode->pop();
+            block = new SeqNode(left,right);
+            tempNode->push(block);
+        }
     }
     else if (nodeId == "Program"){
         int size = tempNode->size();
 
-        if(size >= 2){
+        if(size > 2){
             TreeNode* left = tempNode->front();
             tempNode->pop();
             TreeNode* right = tempNode->front();
@@ -156,6 +180,17 @@ void _translate(Node * n){
                 root = new SeqNode(root,tempNode->front());
                 tempNode->pop();
             }
+        }
+        else if (size == 2){
+            TreeNode* left = tempNode->front();
+            tempNode->pop();
+            TreeNode* right = tempNode->front();
+            tempNode->pop();
+            root = new SeqNode(left,right);
+        }
+        else{
+            root = tempNode->front();
+            tempNode->pop();
         }
     }
     else if (nodeId == "IntValue"){

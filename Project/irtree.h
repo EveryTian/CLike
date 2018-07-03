@@ -70,7 +70,7 @@ public:
         this->label = label;
     }
     virtual string toString(){
-    	return "label";
+    	return label;
     }
 };
 
@@ -110,6 +110,10 @@ public:
     virtual string toString(){
     	return "move";
     }
+	virtual void pushto(queue<TreeNode*> *q){
+        q->push((TreeNode*)moveFrom);
+        q->push((TreeNode*)moveTo);
+	}
 };
 
 class ExpNode:public TreeNode{
@@ -121,9 +125,12 @@ public:
     virtual string toString(){
     	return "exp";
     }
+	/*virtual void pushto(queue<TreeNode*> *q){
+        q->push((TreeNode*)exp);
+	}*/
 };
 
-class TreeExp{
+class TreeExp: public TreeNode{
 public:
     enum{
         SINOP,BINOP,MEM,ESEQ,NAME,CONST,CALL
@@ -147,9 +154,6 @@ public:
     //call
     string funcName;
     vector<TreeExp*>* expList;
-
-    virtual string toString(){
-    }
 };
 
 class SinopExp:public TreeExp{
@@ -167,6 +171,9 @@ public:
             return "not";
         }
     }
+	virtual void pushto(queue<TreeNode*> *q){
+        q->push((TreeNode*)exp);
+	}
 };
 
 class BinopExp:public TreeExp{
@@ -193,6 +200,10 @@ public:
             return "or";
         }
     }
+	virtual void pushto(queue<TreeNode*> *q){
+        q->push((TreeNode*)leftExp);
+        q->push((TreeNode*)rightExp);
+	}
 };
 
 class MemExp:public TreeExp{
@@ -204,6 +215,9 @@ public:
     virtual string toString(){
     	return "mem";
     }
+	virtual void pushto(queue<TreeNode*> *q){
+        q->push((TreeNode*)mem);
+	}
 };
 
 class EseqExp:public TreeExp{
@@ -249,6 +263,6 @@ public:
         this->expList->assign(expList->begin(), expList->end());
     }
     virtual string toString(){
-    	return "call";
+    	return "call"+ funcName;
     }
 };
