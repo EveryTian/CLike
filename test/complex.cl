@@ -1,7 +1,7 @@
 int foo (int x, int y){
     int res = 0;
 
-    
+    res = x+y; // Comment ------
     return res;
 }
 
@@ -12,7 +12,7 @@ void foo2(int n){
 }
 
 int main (void){
-    int m = 1;
+    int m = 4;
     int n = 2;
 
     m = m * n;

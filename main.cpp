@@ -10,8 +10,10 @@
 #include <fstream>
 
 extern int yyparse();
-extern void printAST(void);
-extern void semanticAnalysis(void);
+extern void printAST();
+extern void semanticAnalysis();
+extern void createStackFrame();
+extern void translate();
 
 using namespace std;
 
@@ -19,6 +21,8 @@ int main(void) {
     yyparse();
     printAST();
     semanticAnalysis();
+    createStackFrame();
+    //translate();
     return 0;
 }
 

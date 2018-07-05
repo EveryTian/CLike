@@ -16,12 +16,12 @@ void addId(string identifier, VariableType* type ,ParameterList* paraList,int ad
 VariableType* typeCheck(Expression* exp1, Expression* exp2,unordered_map<string, Symbol*>* hashList);
 void declareCheck(string id, unordered_map<string, Symbol*>* hashList, string kind);
 void _semanticAnalysis(Node * n);
-void semanticAnalysis(void);
+void semanticAnalysis();
 
 unordered_map<string, Symbol*>* funcTable = new unordered_map<string, Symbol*>();
 vector <unordered_map<string, Symbol*>*> *varEnv = new vector <unordered_map<string, Symbol*>*>();
 
-void semanticAnalysis(void) {
+void semanticAnalysis() {
     fstream syb;
 
     syb.open("SymbolTable.txt", ios_base::out);
@@ -29,15 +29,15 @@ void semanticAnalysis(void) {
     _semanticAnalysis(program);
 
     syb << "Function Symbol Table:"<<endl;
-    syb << "Function Name   Return Type    Param Type    Environment"<<endl;
+    syb << "Env    Function Name   Return Type    Param Type"<<endl;
     for(auto it = funcTable->begin(); it != funcTable->end(); ++it)
-        syb << it->second->toString() << endl;
+        it->second->print(&syb);
 
     syb <<endl<<endl<< "Variable Symbol Table:"<<endl;
-    syb << "Variable Name   Type    Environment"<<endl;
+    syb << "Env    Variable Name   Type"<<endl;
     for(int i = 0; i < varEnv->size(); ++i)
         for(auto it = varEnv->at(i)->begin(); it != varEnv->at(i)->end(); ++it)
-            syb << it->second->toString() << endl;
+            it->second->print(&syb);
     syb.close();
 }
 
@@ -103,7 +103,7 @@ void addId(string identifier, VariableType* type ,ParameterList* paraList, int a
         hashList->insert(kvPair);
     }
     else{
-        cout<<endl<<identifier<<" is redefined!"<<endl;
+        cout<<identifier<<" is redefined!"<<endl;
         exit(-1);
     }
 }
